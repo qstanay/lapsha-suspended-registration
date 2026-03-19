@@ -81,25 +81,29 @@
     position: absolute;
     top: 8px;
     right: 8px;
-    background: none;
-    border: 1px solid #ccc;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    background: none !important;
+    border: 1px solid #ccc !important;
+    border-radius: 50% !important;
+    width: 30px !important;
+    height: 30px !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
     font-size: 16px;
     cursor: pointer;
     color: #666;
-    display: inline-flex;
+    display: inline-flex !important;
     align-items: center;
     justify-content: center;
     transition: color 0.2s, border-color 0.2s;
-    padding: 0;
     line-height: 1;
+    box-sizing: border-box !important;
 }
 
 .lapsha-captcha-refresh:hover {
     color: #2271b1;
-    border-color: #2271b1;
+    border-color: #2271b1 !important;
 }
 
 /* ─── Honeypot – must be invisible ─── */
