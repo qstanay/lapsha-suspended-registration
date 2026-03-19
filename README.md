@@ -228,4 +228,4 @@ JavaScript выполняет:
 ## Лицензия
 
 Автор: Lapsha Dev (https://lapsha.dev)
-Версия: 1.0.0
+Версия: 1.0.0-alpha.1

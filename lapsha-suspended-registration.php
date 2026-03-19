@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Lapsha Suspended Registration
  * Description: Управление регистрацией WooCommerce: подтверждение email, временные пользователи, собственная капча.
- * Version: 1.0.0
+ * Version: 1.0.0-alpha.1
  * Author: Lapsha Dev
  * Author URI: https://lapsha.dev
  * Text Domain: lapsha-reg
@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'LAPSHA_REG_VERSION', '1.0.0' );
+define( 'LAPSHA_REG_VERSION', '1.0.0-alpha.1' );
 define( 'LAPSHA_REG_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LAPSHA_REG_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'LAPSHA_REG_TABLE_PENDING', 'lapsha_pending_users' );
