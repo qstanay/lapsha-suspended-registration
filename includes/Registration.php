@@ -17,11 +17,41 @@ class Registration {
             return;
         }
 
+        if ( '1' !== get_option( 'lapsha_email_verification', '1' ) ) {
+            return;
+        }
+
+        // ─── 1. Divi AJAX ajaxreg ───
         // The Divi theme registers ajax_reg on 'init' priority 10 via ajax_login_init().
-        // We must remove it AFTER the theme adds it (priority 20),
-        // then register our own handler at a higher priority (9) to run first.
+        // We run at priority 20, so the theme handler is guaranteed to be there.
         add_action( 'init', [ $this, 'override_ajax_handler' ], 20 );
+
+        // ─── 2. WooCommerce native registration (My Account page form) ───
+        // WC_Form_Handler::process_registration() calls wc_create_new_customer().
+        // We block it before it reaches that point by injecting a fatal validation error
+        // and handling the pending user ourselves.
+        add_filter( 'woocommerce_process_registration_errors', [ $this, 'intercept_wc_registration' ], 999, 4 );
+
+        // ─── 3. WooCommerce checkout account creation ───
+        // Prevent account creation during checkout — force customers to register first.
+        add_filter( 'woocommerce_checkout_registration_enabled', '__return_false' );
+
+        // ─── 4. WordPress core wp-login.php?action=register ───
+        // Block direct WP registration form.
+        add_filter( 'registration_errors', [ $this, 'block_wp_core_registration' ], 999, 3 );
+
+        // ─── 5. WooCommerce REST Store API checkout ───
+        // Block account creation via REST API checkout.
+        add_filter( 'woocommerce_rest_checkout_create_account', '__return_false' );
+
+        // ─── 6. Mark our own AJAX handler so filters above don't block it ───
+        $this->is_lapsha_ajax = false;
     }
+
+    /**
+     * @var bool Flag to distinguish our own AJAX handler from external calls.
+     */
+    private $is_lapsha_ajax = false;
 
     /**
      * Remove the theme's ajax_reg and replace with ours.
@@ -45,9 +75,93 @@ class Registration {
     }
 
     /**
+     * Intercept WooCommerce native registration (My Account form, WC_Form_Handler).
+     *
+     * If someone submits the standard WooCommerce registration form (not our AJAX),
+     * we create a pending user and return an error to prevent WC from creating the real user.
+     *
+     * @param \WP_Error $errors
+     * @param string    $username
+     * @param string    $password
+     * @param string    $email
+     * @return \WP_Error
+     */
+    public function intercept_wc_registration( $errors, $username, $password, $email ) {
+        // Don't intercept our own AJAX handler's validation call
+        if ( $this->is_lapsha_ajax ) {
+            return $errors;
+        }
+
+        // If there are already errors, let WC handle them
+        if ( $errors->get_error_code() ) {
+            return $errors;
+        }
+
+        $email = sanitize_email( $email );
+        if ( empty( $email ) || ! is_email( $email ) ) {
+            return $errors;
+        }
+
+        // Check if already exists as pending
+        $existing = Database::get_pending_by_email( $email );
+        if ( $existing ) {
+            Database::delete_pending( (int) $existing->id );
+        }
+
+        // Create pending user
+        $token   = bin2hex( \random_bytes( 32 ) );
+        $ttl     = (int) get_option( 'lapsha_pending_ttl_hours', 24 );
+        $expires = gmdate( 'Y-m-d H:i:s', time() + $ttl * HOUR_IN_SECONDS );
+
+        $password_hash = '';
+        if ( '' !== $password ) {
+            $password_hash = wp_hash_password( $password );
+        }
+
+        Database::insert_pending_user( [
+            'email'         => $email,
+            'username'      => $username,
+            'password_hash' => $password_hash,
+            'token'         => $token,
+            'ip_address'    => self::get_client_ip(),
+            'expires_at'    => $expires,
+        ] );
+
+        $this->send_verification_email( $email, $token );
+
+        // Return an error to STOP WooCommerce from creating the user.
+        // The "error" message is actually a success notice for the user.
+        $errors->add(
+            'lapsha_pending',
+            __( 'На вашу почту отправлено письмо с подтверждением. Проверьте входящие (и спам).', 'lapsha-reg' )
+        );
+
+        return $errors;
+    }
+
+    /**
+     * Block WordPress core registration (wp-login.php?action=register).
+     *
+     * @param \WP_Error $errors
+     * @param string    $sanitized_user_login
+     * @param string    $user_email
+     * @return \WP_Error
+     */
+    public function block_wp_core_registration( $errors, $sanitized_user_login, $user_email ) {
+        $errors->add(
+            'lapsha_blocked',
+            __( 'Регистрация через эту форму отключена. Пожалуйста, зарегистрируйтесь через основную форму на сайте.', 'lapsha-reg' )
+        );
+        return $errors;
+    }
+
+    /**
      * Handle AJAX registration request.
      */
     public function handle_registration() {
+        // Mark as our handler so intercept_wc_registration() doesn't interfere
+        $this->is_lapsha_ajax = true;
+
         check_ajax_referer( 'ajax-reg-nonce', 'security' );
 
         $email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
