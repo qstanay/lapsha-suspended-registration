@@ -82,19 +82,10 @@
             try {
                 var response = JSON.parse(xhr.responseText);
                 if (response.pending === true) {
-                    // Show confirmation message, prevent redirect
-                    var $form = $('form#rs_registration');
-                    $form.find('.status')
-                        .removeClass('error')
-                        .addClass('success')
-                        .html('<div class="woocommerce-message">' + response.message + '</div>')
-                        .show();
-
-                    // Disable submit button
-                    $form.find('button[type="submit"]').prop('disabled', true).text(response.message);
-
-                    // Prevent the theme script from redirecting
-                    event.stopImmediatePropagation();
+                    // Redirect to the dedicated "check your email" page
+                    window.location.href = (typeof lapshaReg !== 'undefined' && lapshaReg.pendingUrl)
+                        ? lapshaReg.pendingUrl
+                        : window.location.pathname + '?lapsha_pending=1';
                 }
             } catch (e) {
                 // not JSON, ignore

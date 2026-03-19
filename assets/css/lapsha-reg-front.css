@@ -126,3 +126,39 @@ form#rs_registration .status.success .woocommerce-message {
     border-radius: 4px;
     font-size: 14px;
 }
+
+/* ─── Pending notice (check your email page) ─── */
+.lapsha-pending-notice {
+    max-width: 480px;
+    margin: 40px auto;
+    padding: 32px 28px;
+    text-align: center;
+    background: #f0f7f0;
+    border: 1px solid #c3e6cb;
+    border-radius: 8px;
+}
+
+.lapsha-pending-notice .lapsha-pending-icon {
+    font-size: 48px;
+    line-height: 1;
+    margin-bottom: 12px;
+}
+
+.lapsha-pending-notice h3 {
+    margin: 0 0 12px;
+    font-size: 20px;
+    color: #155724;
+}
+
+.lapsha-pending-notice p {
+    margin: 0 0 8px;
+    font-size: 15px;
+    color: #333;
+    line-height: 1.5;
+}
+
+.lapsha-pending-notice p:last-child {
+    margin-bottom: 0;
+    font-size: 13px;
+    color: #666;
+}

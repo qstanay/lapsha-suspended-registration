@@ -44,7 +44,10 @@ class Registration {
         // Block account creation via REST API checkout.
         add_filter( 'woocommerce_rest_checkout_create_account', '__return_false' );
 
-        // ─── 6. Mark our own AJAX handler so filters above don't block it ───
+        // ─── 6. Show confirmation message after redirect ───
+        add_action( 'template_redirect', [ $this, 'show_pending_notice' ] );
+
+        // ─── 7. Mark our own AJAX handler so filters above don't block it ───
         $this->is_lapsha_ajax = false;
     }
 
@@ -129,13 +132,9 @@ class Registration {
 
         $this->send_verification_email( $email, $token );
 
-        // Add a success notice and redirect — avoids WooCommerce's "Ошибка:" prefix.
-        wc_add_notice(
-            __( 'На вашу почту отправлено письмо с подтверждением. Проверьте входящие (и спам).', 'lapsha-reg' ),
-            'success'
-        );
-
-        wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
+        // Redirect with a query arg — we'll pick it up via show_pending_notice().
+        $url = add_query_arg( 'lapsha_pending', '1', wc_get_page_permalink( 'myaccount' ) );
+        wp_safe_redirect( $url );
         exit;
     }
 
@@ -153,6 +152,36 @@ class Registration {
             __( 'Регистрация через эту форму отключена. Пожалуйста, зарегистрируйтесь через основную форму на сайте.', 'lapsha-reg' )
         );
         return $errors;
+    }
+
+    /**
+     * Show a confirmation message on My Account page after ?lapsha_pending=1 redirect.
+     */
+    public function show_pending_notice() {
+        if ( empty( $_GET['lapsha_pending'] ) ) {
+            return;
+        }
+
+        add_action( 'woocommerce_before_customer_login_form', [ $this, 'render_pending_message' ] );
+        // Also hook into wp_head to render if the WC hook doesn't fire (non-WC My Account templates).
+        add_action( 'wp_head', function () {
+            // Prevent search engines from indexing this transient page.
+            echo '<meta name="robots" content="noindex,nofollow">' . "\n";
+        } );
+    }
+
+    /**
+     * Render the "check your email" block.
+     */
+    public function render_pending_message() {
+        ?>
+        <div class="lapsha-pending-notice">
+            <div class="lapsha-pending-icon">&#9993;</div>
+            <h3><?php esc_html_e( 'Проверьте вашу почту', 'lapsha-reg' ); ?></h3>
+            <p><?php esc_html_e( 'На ваш email отправлено письмо с ссылкой для подтверждения регистрации.', 'lapsha-reg' ); ?></p>
+            <p><?php esc_html_e( 'Перейдите по ссылке в письме, чтобы завершить регистрацию. Если письмо не пришло — проверьте папку «Спам».', 'lapsha-reg' ); ?></p>
+        </div>
+        <?php
     }
 
     /**

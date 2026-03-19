@@ -32,5 +32,9 @@ class Assets {
             LAPSHA_REG_VERSION,
             true
         );
+
+        wp_localize_script( 'lapsha-reg-front', 'lapshaReg', [
+            'pendingUrl' => add_query_arg( 'lapsha_pending', '1', wc_get_page_permalink( 'myaccount' ) ),
+        ] );
     }
 }
