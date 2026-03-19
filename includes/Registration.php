@@ -129,14 +129,14 @@ class Registration {
 
         $this->send_verification_email( $email, $token );
 
-        // Return an error to STOP WooCommerce from creating the user.
-        // The "error" message is actually a success notice for the user.
-        $errors->add(
-            'lapsha_pending',
-            __( 'На вашу почту отправлено письмо с подтверждением. Проверьте входящие (и спам).', 'lapsha-reg' )
+        // Add a success notice and redirect — avoids WooCommerce's "Ошибка:" prefix.
+        wc_add_notice(
+            __( 'На вашу почту отправлено письмо с подтверждением. Проверьте входящие (и спам).', 'lapsha-reg' ),
+            'success'
         );
 
-        return $errors;
+        wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
+        exit;
     }
 
     /**
