@@ -1,0 +1,124 @@
+/**
+ * Lapsha Suspended Registration – frontend styles
+ */
+
+/* ─── Captcha wrapper ─── */
+.lapsha-captcha-wrap {
+    position: relative;
+    margin: 15px 0;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #fafafa;
+}
+
+.lapsha-captcha-wrap .lapsha-captcha-loading {
+    color: #999;
+    font-style: italic;
+    font-size: 13px;
+}
+
+/* ─── Math captcha SVG ─── */
+.lapsha-captcha-math {
+    text-align: center;
+    padding: 8px 0;
+}
+
+.lapsha-captcha-math svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ─── Image select ─── */
+.lapsha-captcha-imgsel .lapsha-captcha-question {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.lapsha-target-emoji {
+    font-size: 24px;
+    vertical-align: middle;
+}
+
+.lapsha-captcha-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.lapsha-captcha-option {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    font-size: 28px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+    padding: 0;
+    line-height: 1;
+}
+
+.lapsha-captcha-option:hover {
+    border-color: #999;
+    transform: scale(1.05);
+}
+
+.lapsha-captcha-option.selected {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.3);
+    transform: scale(1.08);
+}
+
+/* ─── Refresh button ─── */
+.lapsha-captcha-refresh {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    color: #666;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s, border-color 0.2s;
+    padding: 0;
+    line-height: 1;
+}
+
+.lapsha-captcha-refresh:hover {
+    color: #2271b1;
+    border-color: #2271b1;
+}
+
+/* ─── Honeypot – must be invisible ─── */
+.lapsha-hp-field {
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+}
+
+/* ─── Verification message ─── */
+form#rs_registration .status.success .woocommerce-message {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+}
