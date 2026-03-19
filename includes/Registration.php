@@ -17,19 +17,27 @@ class Registration {
             return;
         }
 
-        // Replace the default ajaxreg handler with our own
-        add_action( 'init', [ $this, 'override_ajax_handler' ], 1 );
+        // The Divi theme registers ajax_reg on 'init' priority 10 via ajax_login_init().
+        // We must remove it AFTER the theme adds it (priority 20),
+        // then register our own handler at a higher priority (9) to run first.
+        add_action( 'init', [ $this, 'override_ajax_handler' ], 20 );
     }
 
     /**
      * Remove the theme's ajax_reg and replace with ours.
+     *
+     * Divi's regsite templates (woomo, woonio, ecommerce) all register:
+     *   add_action('wp_ajax_nopriv_ajaxreg', 'ajax_reg')
+     * inside ajax_login_init() which fires on 'init' priority 10.
+     *
+     * We run at priority 20, so the theme handler is guaranteed to be there.
      */
     public function override_ajax_handler() {
         if ( is_user_logged_in() ) {
             return;
         }
 
-        // Remove original handler added by the theme
+        // Remove the theme's global ajax_reg handler (all variants use the same function name)
         remove_action( 'wp_ajax_nopriv_ajaxreg', 'ajax_reg' );
 
         // Add our handler
